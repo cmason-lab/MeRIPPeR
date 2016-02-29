@@ -1,0 +1,40 @@
+<meripper>
+	<data>
+		<samples>
+			<sample name="Huh7">
+				<replicate name="7">
+					<ip>Huh7_HCV_m6A</ip>
+					<control>Huh7_HCV_Flag</control>
+				</replicate>
+			</sample>
+			<sample name="Huh7_5">
+				<replicate name="7_5">
+					<ip>Huh7_5_HCV_m6A</ip>
+					<control>Huh7_5_HCV_Flag</control>
+				</replicate>
+			</sample>
+		</samples>
+	</data>
+	<configuration>
+		<aligner>star</aligner>
+		<num_threads>5</num_threads>
+		<genome>HCV</genome>
+		<genome_fa>hcv_genome/HCV.fasta</genome_fa>
+		<genome_fai>hcv_genome/HCV.fasta.fai</genome_fai>
+		<genome_dir>hcv_genome/</genome_dir>
+		<tophat_genome_dir>hcv_genome/bowtie2/hcv</tophat_genome_dir>
+		<bwa_index>hcv_genome/bwa/HCV.fasta</bwa_index>
+		<gsnap_genome_dir>/zenodotus/dat01/mason_lab_scratch_reference/cmlab/GENOMES/GMAPDB</gsnap_genome_dir>
+		<gsnap_iit>-s /zenodotus/dat01/mason_lab_scratch_reference/cmlab/GENOMES/GMAPDB/hg19/hg19.maps/hg19.refseq.splicesites.iit</gsnap_iit>
+		<refseq_dir>/home/yos2006/refseq</refseq_dir>
+		<genome_sizes>hcv_genome/hcv.sizes</genome_sizes>
+		<mapping_quality_threshold>20</mapping_quality_threshold>
+		<window_size>25</window_size>
+		<window_min_size>100</window_min_size>
+		<window_max_size>200</window_max_size>
+		<alpha>0.05</alpha>
+		<star_index>hcv_genome/star/</star_index>
+		<star_load> --genomeDir hcv_genome/star/ --genomeLoad LoadAndExit --outFileNamePrefix star_genome_load</star_load>
+		<star_remove> --genomeDir hcv_genome/star/ --genomeLoad Remove --outFileNamePrefix star_genome_remove</star_remove>
+	</configuration>
+</meripper>
