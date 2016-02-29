@@ -1,0 +1,161 @@
+See wiki at https://pbtech-vc.med.cornell.edu/git/mason-lab/meripper/wikis/home for usage. 
+
+== Installation Instructions
+MeRIPPeR is compatible with Linux and Mac. 
+Download MeRIPPeR here: http://sourceforge.net/projects/meripper/
+
+=== Other software dependencies
+* Java (>= version 7)
+* R   
+* Perl  
+* STAR  
+* BWA  
+* TopHat  
+* SAMtools  
+* bedtools  
+* bedGraphToBigWig  
+
+==== R package dependencies
+* getopt  
+* zoo
+
+=== Reference files needed
+* Genome: FASTA, FASTA index, BWA index, TopHat index, STAR index  
+* RefSeq annotation files
+
+********************************************************************************************
+***************************************MANUAL***********************************************
+********************************************************************************************
+
+== Set up
+
+Ensure all sequence files are in the directory from which MeRIPPeR is to be run (otherwise STAR will fail to find files)
+
+== Create Makefile 
+
+=== Configuration XML 
+
+==== XML Structure 
+  <pre><nowiki>
+  <meripper>
+    <data>
+        <samples>
+            <sample name="sample_name">
+                <replicate name="replicate_name">
+                    <ip>ip_name</ip>
+                    <control>control_name</control>
+                </replicate>
+            </sample>
+        </samples>
+    </data>
+    <configuration>
+        <'configuration variable'>
+        </'configuration variable'>
+    </configuration>
+  </meripper> 
+  </nowiki>
+  </pre>
+
+* IP/control names must match file names. Do not include ".fastq.gz"
+
+==== Possible XML <configuration> variables 
+
+  * aligner - Choose STAR or TopHat for alignment
+  * num_threads - Number of threads to use
+  * genome - Genome name
+  * genome_fa - Path to FASTA file of genome
+  * genome_fai - Path to .fai file of genome
+  * genome_dir - Path to directory of genomes
+  * tophat_genome_dir - Path to TopHat reference genome directory
+  * bwa_index - Path to BWA index
+  * refseq_dir - Path to RefSeq annotation files
+  * genome_sizes - Path to file of chromosome sizes
+  * mapping_quality_threshold - Filter out reads with  quality less than this threshold
+  * window_size - Window step size
+  * window_min_size - Filter out windows smaller than this minimum size
+  * window_max_size - Filter out windows bigger than this maximum size
+  * alpha - p-value alpha threshold
+
+=== XML to Makefile 
+  <code>perl config.pl [config.xml] </code>
+* Input: config.xml unless otherwise specified.  
+* Output: Makefile
+
+
+
+== Makefile targets 
+
+=== make all
+Pipeline that runs the equivalent of <code>make peaks</code>, <code>make peaks-annotate</code>, <code>make wc</code>.
+
+=== make 
+Defaults to <code>make peaks</code>.
+
+=== make peaks 
+* Input: <samples>.fasta.gz
+  * Aligns samples
+  * Calls peaks (<sample>*.peaks-split.bed)
+  * Calls true negative peaks (TN_<sample>*.peaks-split.bed)
+  * plots
+* Output: <sample>*.peaks-split.bed, TN_<sample>*.peaks-split.bed, alignment output and logs.
+
+=== make peaks-annotate
+* Input: <samples>.fasta.gz
+  * Aligns samples
+  * Calls peaks (<sample>*.peaks*.bed)
+  * Calls true negative peaks (TN_<sample>*.peaks-split.bed)
+  * Plots occupancy of peaks across 3' UTR, CDS, and 5' UTR (<sample>*.tpp.n*.pdf)
+* Output: <sample>*.tpp.n*.pdf, <sample>*.peaks-split.bed, TN_<sample>*.peaks-split.bed, alignment output and logs.
+
+=== make bigwig 
+* Input: <samples>.fasta.gz
+  * Aligns samples
+  * Converts <samples>.bam to <samples>.bedgraph
+  * Converts <samples>.bedgraph to <samples>.bw
+* Output: <samples>.bw, <samples>.bedgraph, alignment output and logs.
+
+=== make refseq 
+* Input: <samples>.fasta.gz
+  * Aligns samples
+  * Computes read counts (<samples>.rc.txt) and fraction of aligned reads (<samples>.frac.txt)
+  * Calculates RPKM at RefSeq genes (<samples>.refseq.genes.rpkm.bed) and exons (<samples>.refseq.exons.rpkm.bed)
+  * Computes library-wide library-size (<aligner>.library-size.txt), number of reads mapped (<aligner>.mapped.txt), read counts (<aligner>.read-counts.txt), and RPKM (<aligner>.rpkm.txt)
+* Output: <samples>.refseq.genes.rpkm.bed, <samples>.refseq.exons.rpkm.bed, <samples>.rc.txt, <samples>.frac.txt, <aligner>.library-size.txt), <aligner>.mapped.txt, <aligner>.read-counts.txt, <aligner>.rpkm.txt, alignment output and logs.
+
+=== make wc 
+* Input: <samples>.fasta.gz
+  * Aligns samples
+  * Computes read counts (<samples>.rc.txt) and fraction of aligned reads (<samples>.frac.txt)
+* Output: <samples>.rc.txt, <samples>.frac.txt, alignment output and logs.
+
+
+== MeRIPPeR.jar options 
+<code>
+usage: MeRIPPER [-a <threshold>] -c <control-file> -g <genome-sizes> [-j <STAR Junctions file>] [-k <Minimum coverage>] -m <MeRIP-sample-file> [-n <minimum window size>] -o <output> [-p <BenjaminiHochberg|Bonferroni>] [-r <Bed 12 genes file>] [-s <step size>] [-t <# threads>] [-w <window size>]
+</code>
+
+ -a,--alpha <threshold>                           p-value alpha threshold
+ -c,--control <control-file>                      control file
+ -g,--genome-sizes <genome-sizes>                 Genome Chromosome Sizes
+ -j,--junctions <STAR Junctions file>             splice junctions from
+                                                  STAR
+ -k,--junctions-min-coverage <Minimum coverage>
+ -m,--merip <MeRIP-sample-file>                   MeRIP sample file
+ -n,--min-window <minimum window size>            Filter out windows
+                                                  smaller than the minimum
+                                                  size
+ -o,--output <output>                             output file
+ -p,--p.adjust <BenjaminiHochberg|Bonferroni>     p-value adjustment
+                                                  method
+ -r,--genes <Bed 12 genes file>                   Genes annotation
+                                                  (RefSeq)
+ -s,--step-size <step size>                       Window Step Size
+ -t,--num-threads <# threads>                     # of threads
+ -w,--window-size <window size>                   Window Size
+
+The necessary arguments are not in brackets, are:
+ -c,--control <control-file>                      control file
+ -g,--genome-sizes <genome-sizes>                 Genome Chromosome Sizes
+ -m,--merip <MeRIP-sample-file>                   MeRIP sample file
+ -o,--output <output>                             output file
+
